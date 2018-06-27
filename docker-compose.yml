@@ -1,0 +1,51 @@
+version: '3.4'
+services:
+  zeo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ploneintranet
+    user: plone
+    volumes:
+      - ./data:/data
+    working_dir: /plone
+    command: /plone/bin/zeo fg
+  solr:
+    image: ploneintranet
+    user: plone
+    working_dir: /plone
+    command: /plone/bin/solr-instance fg
+  redis:
+    image: redis
+  celery:
+    image: ploneintranet
+    user: plone
+    working_dir: /plone
+    command: /plone/bin/celery -A ploneintranet.async.celerytasks worker --broker=redis://redis:6379/0
+    depends_on:
+      - redis
+  flower:
+    image: ploneintranet
+    user: plone
+    working_dir: /plone
+    command: /plone/bin/celery -A ploneintranet.async.celerytasks flower --broker=redis://redis:6379/0
+    depends_on:
+      - celery
+  instance1:
+    image: ploneintranet
+    user: plone
+    ports:
+      - '8081:8080'
+    links:
+      - zeo:db
+      - celery:amqp
+      - solr:indexer
+    working_dir: /plone
+    command: /plone/bin/instance start
+    depends_on:
+      - celery
+      - flower
+      - solr
+    environment:
+      - BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
