@@ -1,51 +1,54 @@
 version: '3.4'
 services:
-  zeo:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: ploneintranet
+  intranet-zeo:
+    image: docker-prod.affinitic.be/ploneintranet:latest
     user: plone
     volumes:
-      - ./data:/data
+      - ./data:/plone/var
     working_dir: /plone
     command: /plone/bin/zeo fg
-  solr:
-    image: ploneintranet
+  intranet-solr:
+    image: docker-prod.affinitic.be/ploneintranet:latest
     user: plone
     working_dir: /plone
     command: /plone/bin/solr-instance fg
-  redis:
+  intranet-redis:
     image: redis
-  celery:
-    image: ploneintranet
+  intranet-celery:
+    image: docker-prod.affinitic.be/ploneintranet:latest
     user: plone
+    links:
+      - intranet-redis:redis
     working_dir: /plone
-    command: /plone/bin/celery -A ploneintranet.async.celerytasks worker --broker=redis://redis:6379/0
+    command: /plone/bin/celery -A ploneintranet.async.celerytasks worker --broker=intranet-redis://redis:6379/0
     depends_on:
-      - redis
-  flower:
-    image: ploneintranet
+      - intranet-redis
+    environment:
+      - BROKER_URL=redis://intranet-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://intranet-redis:6379/0
+  intranet-flower:
+    image: docker-prod.affinitic.be/ploneintranet:latest
     user: plone
+    links:
+      - intranet-redis:redis
     working_dir: /plone
-    command: /plone/bin/celery -A ploneintranet.async.celerytasks flower --broker=redis://redis:6379/0
+    command: /plone/bin/celery -A ploneintranet.async.celerytasks flower --broker=intranet-redis://redis:6379/0
     depends_on:
-      - celery
-  instance1:
-    image: ploneintranet
+      - intranet-celery
+    environment:
+      - BROKER_URL=redis://intranet-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://intranet-redis:6379/0
+  intranet-instance1:
+    image: docker-prod.affinitic.be/ploneintranet:latest
     user: plone
     ports:
-      - '8081:8080'
-    links:
-      - zeo:db
-      - celery:amqp
-      - solr:indexer
+      - '15080:8080'
     working_dir: /plone
-    command: /plone/bin/instance start
+    command: /plone/bin/instance fg
     depends_on:
-      - celery
-      - flower
-      - solr
+      - intranet-celery
+      - intranet-flower
+      - intranet-solr
     environment:
-      - BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - BROKER_URL=redis://intranet-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://intranet-redis:6379/0

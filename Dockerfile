@@ -2,8 +2,8 @@ FROM quaive/ploneintranet-base:mars.3
 
 RUN addgroup --gid 500 plone \
     && adduser --home /plone --ingroup plone --uid 500 --disabled-password --gecos '' plone \
-    && mkdir -p /plone /data/zeoserver /data/instance /data/filestorage /data/blobstorage \
-    && chown -R plone:plone /plone /data
+    && mkdir -p /plone /plone/data/zeoserver /plone/data/instance /plone/data/filestorage /plone/data/blobstorage \
+    && chown -R plone:plone /plone
 ADD . /plone
 RUN ln -s /var/tmp/eggs /plone/eggs \
     && ln -s /var/tmp/downloads /plone/downloads \
@@ -20,7 +20,7 @@ RUN apt-get remove -y gcc python-dev \
     && apt-get autoremove -y \
     && apt-get clean
 USER plone
-VOLUME /data
+VOLUME /plone/var
 HEALTHCHECK --start-period=1m --timeout=10s --interval=1m CMD curl --fail http://127.0.0.1:8080/ || exit 1
 EXPOSE 8080
 CMD ["/bin/bash"]
