@@ -2,7 +2,7 @@ FROM quaive/ploneintranet-base:mars.3
 
 RUN addgroup --gid 500 plone \
     && adduser --home /plone --ingroup plone --uid 500 --disabled-password --gecos '' plone \
-    && mkdir -p /plone /plone/data/zeoserver /plone/data/instance /plone/data/filestorage /plone/data/blobstorage \
+    && mkdir -p /plone /plone/var/zeoserver /plone/var/instance /plone/var/filestorage /plone/var/blobstorage \
     && chown -R plone:plone /plone
 ADD . /plone
 RUN ln -s /var/tmp/eggs /plone/eggs \
@@ -15,7 +15,7 @@ RUN cd /plone \
     && bin/pip install -r requirements.txt \
     && bin/buildout -c buildout.cfg \
     && find /plone \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' + \
-    && chown -R plone:plone /plone /data
+    && chown -R plone:plone /plone
 RUN apt-get remove -y gcc python-dev \
     && apt-get autoremove -y \
     && apt-get clean

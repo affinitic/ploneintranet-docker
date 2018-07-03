@@ -17,10 +17,8 @@ services:
   intranet-celery:
     image: docker-prod.affinitic.be/ploneintranet:latest
     user: plone
-    links:
-      - intranet-redis:redis
     working_dir: /plone
-    command: /plone/bin/celery -A ploneintranet.async.celerytasks worker --broker=intranet-redis://redis:6379/0
+    command: /plone/bin/celery -A ploneintranet.async.celerytasks worker --broker=redis://intranet-redis:6379/0
     depends_on:
       - intranet-redis
     environment:
@@ -29,10 +27,8 @@ services:
   intranet-flower:
     image: docker-prod.affinitic.be/ploneintranet:latest
     user: plone
-    links:
-      - intranet-redis:redis
     working_dir: /plone
-    command: /plone/bin/celery -A ploneintranet.async.celerytasks flower --broker=intranet-redis://redis:6379/0
+    command: /plone/bin/celery -A ploneintranet.async.celerytasks flower --broker=redis://intranet-redis:6379/0
     depends_on:
       - intranet-celery
     environment:
@@ -43,6 +39,8 @@ services:
     user: plone
     ports:
       - '15080:8080'
+    volumes:
+      - ./data:/plone/var
     working_dir: /plone
     command: /plone/bin/instance fg
     depends_on:
