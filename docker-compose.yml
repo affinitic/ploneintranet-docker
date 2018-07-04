@@ -38,15 +38,35 @@ services:
     image: docker-prod.affinitic.be/ploneintranet:latest
     user: plone
     ports:
-      - '15080:8080'
+      - '15081:8080'
     volumes:
       - ./data:/plone/var
     working_dir: /plone
-    command: /plone/bin/instance fg
+    command: /plone/bin/instance1 console
+    links:
+      - intranet-zeo:zeo
     depends_on:
       - intranet-celery
       - intranet-flower
       - intranet-solr
+    environment:
+      - BROKER_URL=redis://intranet-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://intranet-redis:6379/0
+  intranet-instance2:
+    image: docker-prod.affinitic.be/ploneintranet:latest
+    user: plone
+    ports:
+      - '15082:8080'
+    volumes:
+      - ./data:/plone/var
+    working_dir: /plone
+    command: /plone/bin/instance2 console
+    depends_on:
+      - intranet-celery
+      - intranet-flower
+      - intranet-solr
+    links:
+      - intranet-zeo:zeo
     environment:
       - BROKER_URL=redis://intranet-redis:6379/0
       - CELERY_RESULT_BACKEND=redis://intranet-redis:6379/0

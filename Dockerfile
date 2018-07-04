@@ -2,7 +2,8 @@ FROM quaive/ploneintranet-base:mars.3
 
 RUN addgroup --gid 500 plone \
     && adduser --home /plone --ingroup plone --uid 500 --disabled-password --gecos '' plone \
-    && mkdir -p /plone /plone/var/zeoserver /plone/var/instance /plone/var/filestorage /plone/var/blobstorage \
+    && mkdir -p /plone /plone/var/zeoserver /plone/var/filestorage /plone/var/blobstorage \
+    && mkdir -p /plone/var/instance /plone/var/instance1 /plone/var/instance2 /plone/var/instance3 /plone/var/instance4 \
     && chown -R plone:plone /plone
 ADD . /plone
 RUN ln -s /var/tmp/eggs /plone/eggs \
