@@ -17,9 +17,6 @@ RUN cd /plone \
     && bin/buildout -c buildout.cfg \
     && find /plone \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' + \
     && chown -R plone:plone /plone
-RUN apt-get remove -y gcc python-dev \
-    && apt-get autoremove -y \
-    && apt-get clean
 USER plone
 VOLUME /plone/var
 HEALTHCHECK --start-period=1m --timeout=10s --interval=1m CMD curl --fail http://127.0.0.1:8080/ || exit 1
